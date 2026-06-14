@@ -81,17 +81,17 @@ Nenhuma dessas variáveis está presente no arquivo `workflow-chatbot-telegram.j
 
 ## Rodando o N8N com Docker (opcional)
 
-Este reposit\u00f3rio inclui um `docker-compose.yml` de exemplo (Postgres + Redis + N8N em modo queue, com Traefik para HTTPS).
+Este repositório inclui um `docker-compose.yml` de exemplo (Postgres + Redis + N8N em modo queue, com Traefik para HTTPS).
 
-1. Copie `.env.example` para `.env` e preencha os valores (dom\u00ednio, credenciais do Postgres, chave de criptografia do N8N).
-2. Garanta que a rede externa `traefik-public` j\u00e1 exista (ou ajuste o compose para seu cen\u00e1rio).
+1. Copie `.env.example` para `.env` e preencha os valores (domínio, credenciais do Postgres, chave de criptografia do N8N).
+2. Garanta que a rede externa `traefik-public` já exista (ou ajuste o compose para seu cenário).
 3. Suba os containers:
    ```bash
    docker compose up -d
    ```
 4. Acesse `https://SEU_DOMINIO` configurado em `N8N_HOST`.
 
-> O arquivo `.env` nunca deve ser commitado \u2014 ele j\u00e1 est\u00e1 listado no `.gitignore`.
+> O arquivo `.env` nunca deve ser commitado — ele já está listado no `.gitignore`.
 
 ## Testando o chatbot
 
