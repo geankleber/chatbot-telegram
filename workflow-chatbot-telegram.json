@@ -1,0 +1,455 @@
+{
+  "name": "ClimaTempo",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        96
+      ],
+      "id": "3310f1dd-0da8-4a8e-9161-d279e77bb824",
+      "name": "Telegram Trigger",
+      "webhookId": "0d445a13-2b4b-4445-93c2-b486698ed4f9",
+      "credentials": {
+        "telegramApi": {
+          "id": "cMDmgNW12Noy1rk3",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7190e367-c880-4eb1-b284-d499efe4ba5b",
+              "name": "queue",
+              "value": "={{ $json.message.text.trim().toLowerCase().normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\").replace(/\\s*,\\s*/g, \",\") + \",br\" }}",
+              "type": "string"
+            },
+            {
+              "id": "f7a9d3d2-fbf5-48b2-9675-297d02a982d5",
+              "name": "chat_id",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        96
+      ],
+      "id": "8e745460-7ab9-48d2-8992-abc22333eef1",
+      "name": "queue"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.queue }}"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            },
+            {
+              "name": "lang",
+              "value": "pt_br"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        96
+      ],
+      "id": "a1848228-5374-4f38-bfaa-447f232f274a",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "vjPpEQOgMK7Y5vOk",
+          "name": "Custom Auth account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fd4cd36d-d94e-403c-b04c-1ef1dc1deb01",
+              "leftValue": "={{ $json.error !== undefined }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        96
+      ],
+      "id": "0e7d1a36-07c3-45a2-814d-c0d294cd623b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd89bdb6-616c-4d7a-bd37-ee39256708eb",
+              "name": "mensagem_final",
+              "value": "❌ Cidade não encontrada.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "aecc9620-7f88-4b52-bce9-afdb0d14aed4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1a315007-85b6-4ef5-9912-916db0bc7123",
+              "name": "=mensagem",
+              "value": "=☀️ A temperatura em {{ $json.name }} é de {{ Math.round($json.main.temp) }}°C",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        220
+      ],
+      "id": "bfadf618-f16c-42b2-965d-6697eb87c860",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('queue').item.json.chat_id }}",
+        "text": "={{ $json.mensagem_final }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        124
+      ],
+      "id": "73941a1c-5b5b-4c9b-b28e-32554d3c7d09",
+      "name": "Send a text message",
+      "webhookId": "551b9e9b-bfa9-426f-9448-2c2920c2e7aa",
+      "credentials": {
+        "telegramApi": {
+          "id": "cMDmgNW12Noy1rk3",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Reescreva a mensagem abaixo de forma natural e amigável em português brasileiro, mantendo a informação da temperatura e cidade. Responda APENAS em JSON no formato {\"message\":\"...\",\"ok\":true}, sem texto adicional.      Mensagem original: {{ $json.mensagem }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "9024f166-b120-4239-a586-32c1d89f9458",
+      "name": "Basic LLM Chain",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1128,
+        444
+      ],
+      "id": "91e496fe-2ba8-4e87-b732-ffc97e5096ff",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "x9cZrUlIjNzMWdGl",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"message\": \"Olha só, tá fazendo 28°C em Brasília hoje! ☀️\",\n  \"ok\": true\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1256,
+        444
+      ],
+      "id": "4ecf7a76-78a7-49af-ab44-1c71d753f451",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bca2c095-2572-429a-a82a-714634aab1ee",
+              "name": "mensagem_final",
+              "value": "={{ $json.output.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1472,
+        124
+      ],
+      "id": "e7525685-e926-4536-9fd0-9073b8b23c85",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3475aabe-60b5-44ec-a967-9319b70f7faf",
+              "name": "mensagem_final",
+              "value": "={{ $('Edit Fields1').item.json.mensagem }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1472,
+        316
+      ],
+      "id": "d0e470db-6779-4079-961a-a718c7d7ebf4",
+      "name": "Edit Fields3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "queue": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "88be1210-772a-42e8-897a-de3eea9d4c42",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "430cc1c80dd786f82d92f8555ab7fca30b0da012c9407e61d316dbf07484ad7c"
+  },
+  "id": "Rwe8OqyUcDVYlTjb",
+  "tags": []
+}

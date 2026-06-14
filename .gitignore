@@ -1,0 +1,10 @@
+# Variáveis de ambiente com credenciais reais
+.env
+
+# Dados persistentes do N8N/Postgres/Redis (caso rode localmente neste diretório)
+n8n-data/
+postgres-data/
+redis-data/
+
+# Arquivos de sistema
+.DS_Store
